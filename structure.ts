@@ -6,6 +6,10 @@ import type {StructureResolver} from 'sanity/structure'
  * Measures underneath. Sanity's default desk just lists every document
  * type in one flat pile, which fails the "non-technical editors, hard
  * requirement" constraint (PRD §4) the moment there are 40+ Regions.
+ *
+ * Special Districts (LACCD, LAUSD, etc.) get their own top-level item —
+ * they're not nested under City since one district can serve many
+ * cities. See docs/backend-strategy.md §11.
  */
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -32,6 +36,9 @@ export const structure: StructureResolver = (S) =>
             .title('City Regions')
             .filter('_type == "region" && tier == "city"')
         ),
+      S.listItem()
+        .title('Special Districts')
+        .child(S.documentTypeList('specialDistrict').title('Special Districts')),
       S.divider(),
       S.listItem()
         .title('All Races')

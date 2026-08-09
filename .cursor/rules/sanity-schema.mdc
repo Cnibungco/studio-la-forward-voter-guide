@@ -15,16 +15,40 @@ not move this Studio into the app or add a Studio route there.
   Never add an array-of-references field going the other direction
   (e.g. `race.entries`) — this project deliberately uses one-directional
   references so there's exactly one place a relationship can break.
+  **Exception:** `ballotRace` (see below) is an embedded object, not a
+  document, so it has no `_id` an Entry could reference — it necessarily
+  holds an `entries` reference array pointing *at* Entry documents. This
+  is the one intentional inversion; don't generalize it back to `race`.
 - `Region.tier` is a fixed 3-value enum (state/county/city) mapped to
   hardcoded top-level nav sections in the frontend. Don't make tier
   dynamic/editable.
-- Rating and recommendation option lists are locked: Entry rating is
-  No Recommendation / Recommended / Endorsed; Measure recommendation is
-  Support / Oppose / No Position. If asked to change them, confirm with
-  the user first — these went through a real stakeholder sign-off
-  process, not just an engineering default.
-- Every document type needs an `order` field for manual sort — editors
-  need control over display order, not alphabetical-only.
+- Rating and position option lists are locked: Entry rating is
+  No Recommendation / Recommended / Endorsed; Measure position is
+  Support / Oppose / No Position (field renamed from `recommendation` to
+  `position` — see docs/backend-strategy.md §11). If asked to change
+  either list, confirm with the user first — these went through a real
+  stakeholder sign-off process, not just an engineering default.
+  `position`, `pros`, and `cons` are all required on both `measure` and
+  `ballotMeasure` — not either/or. `entry.reasoning` is required for
+  every rating value, including No Recommendation — a rating with no
+  explanation isn't publishable.
+- City-tier ballot content (see docs/backend-strategy.md §11) uses a
+  different pattern than State/County: a City-tier `region.sections`
+  array holds `raceGroup`/`measureGroup` blocks, whose `ballotRace`/
+  `ballotMeasure` items are embedded objects (ownership by containment),
+  not documents. `specialDistrict` uses the identical `sections` shape
+  for content spanning multiple cities, plus a `citiesServed`
+  multi-reference. State/County keep using the original `race`/`measure`
+  document model unchanged — don't collapse the two models into one
+  without asking; they solve genuinely different problems (fixed slate
+  vs. wildly variable ballots + multi-city districts).
+- Every *document* type needs an `order` field for manual sort, since
+  independent top-level documents returned by a GROQ filter have no
+  inherent order. Arrays that already live inside one document
+  (`sections`, `raceGroup.races`, `measureGroup.measures`) do **not** get
+  an `order` field — Studio's array editor natively drag-reorders them,
+  and GROQ returns array items in stored order. Don't add a field that
+  duplicates that built-in behavior.
 - Don't add fields not grounded in the PRD without asking. This project
   has a history of scope creep getting pushed back on; keep the schema
   lean.

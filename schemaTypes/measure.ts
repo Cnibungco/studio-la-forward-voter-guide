@@ -8,7 +8,11 @@ import {defineField, defineType} from 'sanity'
  * types, not variants of one type — races carry candidate/rating fields,
  * measures carry a pros/cons breakdown instead."
  *
- * `recommendation` scale confirmed: Support / Oppose / No Position.
+ * `position` scale confirmed: Support / Oppose / No Position. Named
+ * `position` (not `recommendation`, its original name) to match the term
+ * already locked in docs/backend-strategy.md §1 and
+ * .cursor/rules/project-overview.mdc. `position` and `pros`/`cons` are
+ * both required — not either/or (see docs/backend-strategy.md §11).
  */
 export const measure = defineType({
   name: 'measure',
@@ -48,16 +52,18 @@ export const measure = defineType({
       title: 'Pros',
       type: 'array',
       of: [{type: 'block'}],
+      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'cons',
       title: 'Cons',
       type: 'array',
       of: [{type: 'block'}],
+      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
-      name: 'recommendation',
-      title: 'Recommendation',
+      name: 'position',
+      title: 'Position',
       type: 'string',
       options: {
         list: [
@@ -66,6 +72,7 @@ export const measure = defineType({
           {title: 'No Position', value: 'no_position'},
         ],
       },
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'order',

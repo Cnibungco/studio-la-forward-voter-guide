@@ -14,6 +14,12 @@ import {defineField, defineType} from 'sanity'
  * frontend nav per the non-technical doc ("3 Tiers: City, State, County").
  * A Region is what lives *inside* one of those buckets, e.g. "City of
  * Santa Monica," "Countywide Offices," "State Legislature – Senate."
+ *
+ * City-tier regions additionally use `sections` (see docs/backend-strategy.md
+ * §11) — an ordered array of raceGroup/measureGroup blocks — instead of
+ * relying on separate Race/Measure documents referencing this Region.
+ * State/County regions leave `sections` empty and keep using the
+ * Race/Measure documents as before.
  */
 export const region = defineType({
   name: 'region',
@@ -61,6 +67,17 @@ export const region = defineType({
       type: 'text',
       rows: 3,
       description: 'Optional short blurb shown at the top of this section.',
+    }),
+    defineField({
+      name: 'sections',
+      title: 'Ballot sections (City only)',
+      type: 'array',
+      of: [{type: 'raceGroup'}, {type: 'measureGroup'}],
+      description:
+        "Ordered, editor-controlled race/measure groups for this city's ballot. " +
+        'Only used when Tier = City — State/County regions keep using the ' +
+        'Race/Measure documents that reference this Region.',
+      hidden: ({document}) => document?.tier !== 'city',
     }),
   ],
   preview: {

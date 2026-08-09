@@ -1,0 +1,32 @@
+---
+description: Sanity schema conventions for the LA Forward Voter Guide
+globs: schemaTypes/**/*.ts,sanity.config.ts,structure.ts
+alwaysApply: false
+---
+
+# Schema conventions
+
+This Studio is standalone — it is the source of truth for the content
+model. The Next.js app lives in a sibling folder (`voter-guide-app`) and
+only fetches published content; it never defines or embeds schema. Do
+not move this Studio into the app or add a Studio route there.
+
+- `Entry` references `Race`; `Race` and `Measure` reference `Region`.
+  Never add an array-of-references field going the other direction
+  (e.g. `race.entries`) — this project deliberately uses one-directional
+  references so there's exactly one place a relationship can break.
+- `Region.tier` is a fixed 3-value enum (state/county/city) mapped to
+  hardcoded top-level nav sections in the frontend. Don't make tier
+  dynamic/editable.
+- Rating and recommendation option lists are locked: Entry rating is
+  No Recommendation / Recommended / Endorsed; Measure recommendation is
+  Support / Oppose / No Position. If asked to change them, confirm with
+  the user first — these went through a real stakeholder sign-off
+  process, not just an engineering default.
+- Every document type needs an `order` field for manual sort — editors
+  need control over display order, not alphabetical-only.
+- Don't add fields not grounded in the PRD without asking. This project
+  has a history of scope creep getting pushed back on; keep the schema
+  lean.
+- After changing schema here, run `npx sanity schemas deploy` so the
+  Next.js app's GROQ query and any MCP tooling see the update.

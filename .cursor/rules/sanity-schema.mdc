@@ -49,6 +49,15 @@ not move this Studio into the app or add a Studio route there.
   an `order` field — Studio's array editor natively drag-reorders them,
   and GROQ returns array items in stored order. Don't add a field that
   duplicates that built-in behavior.
+- `race.district` and `ballotRace.district` are optional string fields
+  holding a machine-matchable district code (e.g. `"CD4"`, `"SD24"`,
+  `"CC4"`) for address-based ballot matching — see
+  docs/address-matching-strategy.md and docs/backend-strategy.md §12.
+  Blank means at-large/citywide, and such races always render once their
+  parent Region matches regardless of match precision. This is a *display
+  string doubling as a match key* — free text, not a reference or enum —
+  so don't add validation constraining its format without asking; the
+  prefix convention is documented, not enforced.
 - Don't add fields not grounded in the PRD without asking. This project
   has a history of scope creep getting pushed back on; keep the schema
   lean.

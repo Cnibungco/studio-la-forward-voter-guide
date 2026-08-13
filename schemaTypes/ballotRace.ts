@@ -41,6 +41,17 @@ export const ballotRace = defineType({
       description: 'Optional: the role being elected, if different from the title.',
     }),
     defineField({
+      name: 'district',
+      title: 'District code',
+      type: 'string',
+      description:
+        'Machine-matchable district identifier for address-based ballot matching, e.g. "CC4" for City ' +
+        'Council District 4, "SB1" for a school board sub-district, "TA3" for a community college trustee ' +
+        'area. No city prefix needed — this race already lives inside its city\'s Region. Leave blank for ' +
+        'at-large/citywide races (Mayor, City Attorney) — they always show once their Region matches. ' +
+        'See docs/address-matching-strategy.md.',
+    }),
+    defineField({
       name: 'context',
       title: 'Race context',
       type: 'array',

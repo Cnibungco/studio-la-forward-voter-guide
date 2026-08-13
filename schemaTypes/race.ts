@@ -43,6 +43,15 @@ export const race = defineType({
       description: 'Optional: the role being elected, if different from the title (e.g. "City Attorney").',
     }),
     defineField({
+      name: 'district',
+      title: 'District code',
+      type: 'string',
+      description:
+        'Machine-matchable district identifier for address-based ballot matching, e.g. "CD4", "SD24", ' +
+        '"AD54", "SUP2". Leave blank for at-large/statewide races (Governor, US Senate) — they always ' +
+        'show once their Region matches, regardless of match precision. See docs/address-matching-strategy.md.',
+    }),
+    defineField({
       name: 'order',
       title: 'Display order',
       type: 'number',

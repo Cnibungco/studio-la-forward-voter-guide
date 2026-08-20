@@ -1,5 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
+import {richTextBlock} from './richTextBlock'
+
 /**
  * Entry
  *
@@ -74,7 +76,7 @@ export const entry = defineType({
       name: 'reasoning',
       title: 'Endorsement reasoning',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [richTextBlock],
       description: 'The bio/reasoning text. Can run long — this is rich text, not a plain field.',
       validation: (Rule) => Rule.required().min(1),
     }),

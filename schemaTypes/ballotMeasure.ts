@@ -1,5 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
+import {richTextBlock} from './richTextBlock'
+
 /**
  * Ballot Measure
  *
@@ -58,14 +60,14 @@ export const ballotMeasure = defineType({
       name: 'pros',
       title: 'Pros',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [richTextBlock],
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'cons',
       title: 'Cons',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [richTextBlock],
       validation: (Rule) => Rule.required().min(1),
     }),
   ],

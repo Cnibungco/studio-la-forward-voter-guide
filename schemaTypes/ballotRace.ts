@@ -1,5 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
+import {contentStatusField} from './contentStatus'
+
 /**
  * Ballot Race
  *
@@ -58,6 +60,7 @@ export const ballotRace = defineType({
       of: [{type: 'block'}],
       description: 'Optional general description of the race, shown above the candidate list.',
     }),
+    contentStatusField,
     defineField({
       name: 'entries',
       title: 'Candidates',
@@ -67,12 +70,12 @@ export const ballotRace = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', office: 'office', entries: 'entries'},
-    prepare({title, office, entries}) {
+    select: {title: 'title', office: 'office', entries: 'entries', status: 'contentStatus'},
+    prepare({title, office, entries, status}) {
       const count = Array.isArray(entries) ? entries.length : 0
       return {
         title,
-        subtitle: [office, `${count} candidate${count === 1 ? '' : 's'}`].filter(Boolean).join(' — '),
+        subtitle: [status, office, `${count} candidate${count === 1 ? '' : 's'}`].filter(Boolean).join(' — '),
       }
     },
   },

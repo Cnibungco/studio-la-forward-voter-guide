@@ -1,15 +1,15 @@
 import {defineArrayMember, defineField} from 'sanity'
 
 /**
- * Portable Text block for endorsement reasoning and measure pros/cons.
+ * Portable Text for candidate reasoning and measure write-ups.
  *
- * `{type: 'block'}` already enables bold (`strong`) and a URL `link`
- * annotation via Sanity defaults. Spelling them out here keeps those
- * marks from being dropped if someone later customizes the editor, and
- * does not change the stored array-of-blocks shape.
+ * Normal paragraphs only — no heading styles — so a write-up stays one
+ * piece of text. Bold and links stay available.
  */
 export const richTextBlock = defineArrayMember({
   type: 'block',
+  styles: [{title: 'Normal', value: 'normal'}],
+  lists: [],
   marks: {
     decorators: [
       {title: 'Strong', value: 'strong'},

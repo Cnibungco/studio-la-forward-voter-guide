@@ -21,6 +21,7 @@ export const specialDistrict = defineType({
   name: 'specialDistrict',
   title: 'Special District',
   type: 'document',
+  liveEdit: true,
   fields: [
     defineField({
       name: 'title',

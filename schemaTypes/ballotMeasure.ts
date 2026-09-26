@@ -1,5 +1,6 @@
 import {defineField, defineType} from 'sanity'
 
+import {contentStatusField} from './contentStatus'
 import {richTextBlock} from './richTextBlock'
 
 /**
@@ -15,6 +16,9 @@ import {richTextBlock} from './richTextBlock'
  * Fully self-contained (no child entries to reference out to), so unlike
  * `ballotRace` there's no inversion here — just no `region` ownership
  * field, since ownership is by containment.
+ *
+ * `position` and `reasoning` are required when Content status is
+ * Published. Draft/Pending measures may leave them empty.
  */
 export const ballotMeasure = defineType({
   name: 'ballotMeasure',
@@ -35,6 +39,7 @@ export const ballotMeasure = defineType({
       options: {source: 'title', maxLength: 96},
       description: 'Used for deep-linking to this measure within the city page.',
     }),
+    contentStatusField,
     defineField({
       name: 'summary',
       title: 'Ballot question / summary',
@@ -54,27 +59,37 @@ export const ballotMeasure = defineType({
         ],
         layout: 'dropdown',
       },
-      validation: (Rule) => Rule.required(),
+      description: 'Required to mark this measure Published. May be empty while Draft or Pending.',
+      validation: (Rule) =>
+        Rule.custom((position, context) => {
+          const status = (context.parent as {contentStatus?: string} | undefined)?.contentStatus
+          if (status === 'published' && !position) {
+            return 'Position is required when Content status is Published'
+          }
+          return true
+        }),
     }),
     defineField({
-      name: 'pros',
-      title: 'Pros',
+      name: 'reasoning',
+      title: 'Write-up',
       type: 'array',
       of: [richTextBlock],
-      validation: (Rule) => Rule.required().min(1),
-    }),
-    defineField({
-      name: 'cons',
-      title: 'Cons',
-      type: 'array',
-      of: [richTextBlock],
-      validation: (Rule) => Rule.required().min(1),
+      description:
+        'One write-up, with no section heading. Required when Content status is Published.',
+      validation: (Rule) =>
+        Rule.custom((reasoning, context) => {
+          const status = (context.parent as {contentStatus?: string} | undefined)?.contentStatus
+          if (status === 'published' && (!Array.isArray(reasoning) || reasoning.length === 0)) {
+            return 'A write-up is required when Content status is Published'
+          }
+          return true
+        }),
     }),
   ],
   preview: {
-    select: {title: 'title', position: 'position'},
-    prepare({title, position}) {
-      return {title, subtitle: position}
+    select: {title: 'title', position: 'position', status: 'contentStatus'},
+    prepare({title, position, status}) {
+      return {title, subtitle: [status, position].filter(Boolean).join(' — ')}
     },
   },
 })

@@ -15,5 +15,7 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+    // Singleton — creating a second siteSettings document would fork the copy.
+    templates: (templates) => templates.filter((template) => template.schemaType !== 'siteSettings'),
   },
 })

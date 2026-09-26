@@ -1,5 +1,6 @@
 import {defineField, defineType} from 'sanity'
 
+import {contentStatusField} from './contentStatus'
 import {richTextBlock} from './richTextBlock'
 
 /**
@@ -27,6 +28,7 @@ export const entry = defineType({
   name: 'entry',
   title: 'Entry (Candidate)',
   type: 'document',
+  liveEdit: true,
   fields: [
     defineField({
       name: 'name',
@@ -58,6 +60,7 @@ export const entry = defineType({
       type: 'image',
       options: {hotspot: true},
     }),
+    contentStatusField,
     defineField({
       name: 'rating',
       title: 'Rating',
@@ -70,15 +73,33 @@ export const entry = defineType({
         ],
         layout: 'dropdown',
       },
-      validation: (Rule) => Rule.required(),
+      description:
+        'Required to mark this entry Published. May be empty while Draft or Pending. Three values only — no fourth tier.',
+      validation: (Rule) =>
+        Rule.custom((rating, context) => {
+          const status = (context.parent as {contentStatus?: string} | undefined)?.contentStatus
+          if (status === 'published' && !rating) {
+            return 'Rating is required when Content status is Published'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'reasoning',
       title: 'Endorsement reasoning',
       type: 'array',
       of: [richTextBlock],
-      description: 'The bio/reasoning text. Can run long — this is rich text, not a plain field.',
-      validation: (Rule) => Rule.required().min(1),
+      description:
+        'One write-up, with no section heading. Required whenever a rating is set, including No Recommendation, and whenever this entry is Published.',
+      validation: (Rule) =>
+        Rule.custom((reasoning, context) => {
+          const parent = context.parent as {contentStatus?: string; rating?: string} | undefined
+          const empty = !Array.isArray(reasoning) || reasoning.length === 0
+          if ((parent?.contentStatus === 'published' || parent?.rating) && empty) {
+            return 'Reasoning is required when a rating is set, and when Content status is Published'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'order',
@@ -88,9 +109,9 @@ export const entry = defineType({
     }),
   ],
   preview: {
-    select: {title: 'name', race: 'race.title', rating: 'rating', media: 'photo'},
-    prepare({title, race, rating, media}) {
-      return {title, subtitle: [race, rating].filter(Boolean).join(' — '), media}
+    select: {title: 'name', race: 'race.title', rating: 'rating', status: 'contentStatus', media: 'photo'},
+    prepare({title, race, rating, status, media}) {
+      return {title, subtitle: [status, race, rating].filter(Boolean).join(' — '), media}
     },
   },
 })

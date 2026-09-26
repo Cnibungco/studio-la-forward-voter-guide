@@ -25,6 +25,7 @@ export const region = defineType({
   name: 'region',
   title: 'Region / Section',
   type: 'document',
+  liveEdit: true,
   fields: [
     defineField({
       name: 'title',

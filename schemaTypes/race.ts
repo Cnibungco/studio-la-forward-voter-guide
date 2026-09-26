@@ -1,5 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
+import {contentStatusField} from './contentStatus'
+
 /**
  * Race
  *
@@ -14,6 +16,7 @@ export const race = defineType({
   name: 'race',
   title: 'Race',
   type: 'document',
+  liveEdit: true,
   fields: [
     defineField({
       name: 'title',
@@ -57,6 +60,7 @@ export const race = defineType({
       type: 'number',
       description: 'Lower numbers appear first within this Region.',
     }),
+    contentStatusField,
     defineField({
       name: 'context',
       title: 'Race context',
@@ -66,9 +70,9 @@ export const race = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', region: 'region.title'},
-    prepare({title, region}) {
-      return {title, subtitle: region}
+    select: {title: 'title', region: 'region.title', status: 'contentStatus'},
+    prepare({title, region, status}) {
+      return {title, subtitle: [status, region].filter(Boolean).join(' — ')}
     },
   },
 })

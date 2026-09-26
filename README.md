@@ -42,7 +42,7 @@ Repeat with the production URL once the app is deployed.
 ## Deploy
 
 ```bash
-npm run deploy   # sanity deploy — hosts the Studio at *.sanity.studio
+npm run deploy   # sanity deploy — hosts the Studio at https://la-forward-voter-guide.sanity.studio
 ```
 
 Independent from the Next.js app's deploy — this Studio is not part of

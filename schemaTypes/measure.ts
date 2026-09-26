@@ -1,5 +1,6 @@
 import {defineField, defineType} from 'sanity'
 
+import {contentStatusField} from './contentStatus'
 import {richTextBlock} from './richTextBlock'
 
 /**
@@ -8,18 +9,20 @@ import {richTextBlock} from './richTextBlock'
  * A ballot measure/proposition within a Region. Deliberately a separate
  * type from Race per PRD §3: "Races and Measures are distinct content
  * types, not variants of one type — races carry candidate/rating fields,
- * measures carry a pros/cons breakdown instead."
+ * measures carry a position and one write-up."
  *
  * `position` scale confirmed: Support / Oppose / No Position. Named
  * `position` (not `recommendation`, its original name) to match the term
  * already locked in docs/backend-strategy.md §1 and
- * .cursor/rules/project-overview.mdc. `position` and `pros`/`cons` are
- * both required — not either/or (see docs/backend-strategy.md §11).
+ * .cursor/rules/project-overview.mdc. `position` and `reasoning` are
+ * required when Content status is Published. Draft/Pending measures may
+ * leave them empty.
  */
 export const measure = defineType({
   name: 'measure',
   title: 'Measure',
   type: 'document',
+  liveEdit: true,
   fields: [
     defineField({
       name: 'title',
@@ -42,26 +45,13 @@ export const measure = defineType({
       to: [{type: 'region'}],
       validation: (Rule) => Rule.required(),
     }),
+    contentStatusField,
     defineField({
       name: 'summary',
       title: 'Ballot question / summary',
       type: 'text',
       rows: 3,
       description: 'Plain-language summary of what the measure does.',
-    }),
-    defineField({
-      name: 'pros',
-      title: 'Pros',
-      type: 'array',
-      of: [richTextBlock],
-      validation: (Rule) => Rule.required().min(1),
-    }),
-    defineField({
-      name: 'cons',
-      title: 'Cons',
-      type: 'array',
-      of: [richTextBlock],
-      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'position',
@@ -74,7 +64,31 @@ export const measure = defineType({
           {title: 'No Position', value: 'no_position'},
         ],
       },
-      validation: (Rule) => Rule.required(),
+      description: 'Required to mark this measure Published. May be empty while Draft or Pending.',
+      validation: (Rule) =>
+        Rule.custom((position, context) => {
+          const status = (context.parent as {contentStatus?: string} | undefined)?.contentStatus
+          if (status === 'published' && !position) {
+            return 'Position is required when Content status is Published'
+          }
+          return true
+        }),
+    }),
+    defineField({
+      name: 'reasoning',
+      title: 'Write-up',
+      type: 'array',
+      of: [richTextBlock],
+      description:
+        'One write-up, with no section heading. Required when Content status is Published.',
+      validation: (Rule) =>
+        Rule.custom((reasoning, context) => {
+          const status = (context.parent as {contentStatus?: string} | undefined)?.contentStatus
+          if (status === 'published' && (!Array.isArray(reasoning) || reasoning.length === 0)) {
+            return 'A write-up is required when Content status is Published'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'order',
@@ -84,9 +98,9 @@ export const measure = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', region: 'region.title'},
-    prepare({title, region}) {
-      return {title, subtitle: region}
+    select: {title: 'title', region: 'region.title', status: 'contentStatus'},
+    prepare({title, region, status}) {
+      return {title, subtitle: [status, region].filter(Boolean).join(' — ')}
     },
   },
 })

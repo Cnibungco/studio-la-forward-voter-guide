@@ -16,6 +16,10 @@ export const structure: StructureResolver = (S) =>
     .title('Voter Guide')
     .items([
       S.listItem()
+        .title('Site Settings')
+        .child(S.document().schemaType('siteSettings').documentId('siteSettings').title('Site Settings')),
+      S.divider(),
+      S.listItem()
         .title('State')
         .child(
           S.documentList()

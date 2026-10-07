@@ -11,15 +11,15 @@ function hasPortableText(value: unknown): boolean {
 }
 
 /**
- * One-time backfill for `contentStatus` on production documents that
- * predate the field. Missing values are NOT treated as a live frontend
- * fallback — run this migration once.
+ * Backfill for `contentStatus` on production documents that predate the
+ * field. Missing values are NOT treated as a live frontend fallback.
+ * Safe to re-run: documents that already have a status are skipped.
  *
- * Rules:
+ * Rules for a missing status (a value already set is left alone):
  * - entry: published if rating AND reasoning already exist, else pending
- * - measure / ballotMeasure: published if position AND reasoning exist, else pending
  * - race: published (already on the live guide; rating lives on child entries)
- * - ballotRace: published if it already has candidate references, else pending
+ * - measure, ballotMeasure, ballotRace: pending
+ *   A write-up may be a placeholder. Missing status is not published.
  */
 export default defineMigration({
   title: 'Backfill contentStatus on races, measures, entries, and ballot blocks',
@@ -40,11 +40,7 @@ export default defineMigration({
 
       if (doc._type === 'measure') {
         if (doc.contentStatus) return
-        const ready =
-          typeof doc.position === 'string' &&
-          doc.position.length > 0 &&
-          hasPortableText(doc.reasoning)
-        return at('contentStatus', setIfMissing(publishedIf(ready)))
+        return at('contentStatus', setIfMissing('pending'))
       }
 
       if (doc._type !== 'region' && doc._type !== 'specialDistrict') return
@@ -57,15 +53,14 @@ export default defineMigration({
 
         if ((section as {_type?: string})._type === 'raceGroup') {
           const races = Array.isArray((section as {races?: unknown}).races)
-            ? ((section as {races: Array<{_key?: string; contentStatus?: string; entries?: unknown}>}).races)
+            ? ((section as {races: Array<{_key?: string; contentStatus?: string}>}).races)
             : []
           for (const race of races) {
             if (!race?._key || race.contentStatus) continue
-            const hasEntries = Array.isArray(race.entries) && race.entries.length > 0
             patches.push(
               at(
                 ['sections', {_key: sectionKey}, 'races', {_key: race._key}, 'contentStatus'],
-                setIfMissing(publishedIf(hasEntries)),
+                setIfMissing('pending'),
               ),
             )
           }
@@ -73,18 +68,14 @@ export default defineMigration({
 
         if ((section as {_type?: string})._type === 'measureGroup') {
           const measures = Array.isArray((section as {measures?: unknown}).measures)
-            ? ((section as {measures: Array<{_key?: string; contentStatus?: string; position?: string; reasoning?: unknown}>}).measures)
+            ? ((section as {measures: Array<{_key?: string; contentStatus?: string}>}).measures)
             : []
           for (const measure of measures) {
             if (!measure?._key || measure.contentStatus) continue
-            const ready =
-              typeof measure.position === 'string' &&
-              measure.position.length > 0 &&
-              hasPortableText(measure.reasoning)
             patches.push(
               at(
                 ['sections', {_key: sectionKey}, 'measures', {_key: measure._key}, 'contentStatus'],
-                setIfMissing(publishedIf(ready)),
+                setIfMissing('pending'),
               ),
             )
           }

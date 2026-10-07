@@ -1,6 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
 import {contentStatusField} from './contentStatus'
+import {richTextBlock} from './richTextBlock'
 
 /**
  * Race
@@ -65,8 +66,9 @@ export const race = defineType({
       name: 'context',
       title: 'Race context',
       type: 'array',
-      of: [{type: 'block'}],
-      description: 'Optional general description of the race, shown above the candidate list.',
+      of: [richTextBlock],
+      description:
+        'Optional general description of the race, shown above the candidate list. Normal paragraphs only — no headings.',
     }),
   ],
   preview: {

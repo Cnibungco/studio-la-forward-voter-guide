@@ -1,9 +1,9 @@
 import {defineArrayMember, defineField} from 'sanity'
 
 /**
- * Portable Text for candidate reasoning and measure write-ups.
+ * Portable Text for candidate reasoning, measure write-ups, and race context.
  *
- * Normal paragraphs only — no heading styles — so a write-up stays one
+ * Normal paragraphs only — no heading styles — so the field stays one
  * piece of text. Bold and links stay available.
  */
 export const richTextBlock = defineArrayMember({

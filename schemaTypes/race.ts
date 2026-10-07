@@ -1,6 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
 import {contentStatusField} from './contentStatus'
+import {ratingTitle, RATING_OPTIONS} from './ratingOptions'
 import {richTextBlock} from './richTextBlock'
 
 /**
@@ -12,6 +13,11 @@ import {richTextBlock} from './richTextBlock'
  * that owns the relationship (PRD §5: "an Entry must reference a valid
  * Race, which must reference a valid Region"). Avoids a race.entries
  * array and an entry.race reference drifting out of sync.
+ *
+ * A state or county race can also carry one candidate rating directly
+ * (candidateName, rating, reasoning). That is what editors see on
+ * Governor and the other statewide races. Separate entry documents, when
+ * they exist, are what the public guide shows instead.
  */
 export const race = defineType({
   name: 'race',
@@ -63,6 +69,47 @@ export const race = defineType({
     }),
     contentStatusField,
     defineField({
+      name: 'candidateName',
+      title: 'Candidate name',
+      type: 'string',
+      description:
+        'Who this rating is for. Leave blank when the race title already includes the name, like “Governor - Xavier Becerra”.',
+    }),
+    defineField({
+      name: 'rating',
+      title: 'Rating',
+      type: 'string',
+      options: {
+        list: [...RATING_OPTIONS],
+        layout: 'radio',
+      },
+      description:
+        'No Recommendation, Recommended, or Endorsed. Leave empty to keep showing “Recommendation coming soon.” If this race has separate candidate entries, those ratings are what the public guide shows.',
+      validation: (Rule) =>
+        Rule.custom((rating, context) => {
+          const reasoning = (context.parent as {reasoning?: unknown[]} | undefined)?.reasoning
+          const hasWriteup = Array.isArray(reasoning) && reasoning.length > 0
+          if (hasWriteup && !rating) return 'Choose a rating to go with this write-up'
+          return true
+        }),
+    }),
+    defineField({
+      name: 'reasoning',
+      title: 'Write-up',
+      type: 'array',
+      of: [richTextBlock],
+      description:
+        'One write-up, with no section heading. Required when a rating is set, including No Recommendation.',
+      validation: (Rule) =>
+        Rule.custom((reasoning, context) => {
+          const rating = (context.parent as {rating?: string} | undefined)?.rating
+          if (rating && (!Array.isArray(reasoning) || reasoning.length === 0)) {
+            return 'A write-up is required when a rating is set, including No Recommendation'
+          }
+          return true
+        }),
+    }),
+    defineField({
       name: 'context',
       title: 'Race context',
       type: 'array',
@@ -72,9 +119,18 @@ export const race = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', region: 'region.title', status: 'contentStatus'},
-    prepare({title, region, status}) {
-      return {title, subtitle: [status, region].filter(Boolean).join(' — ')}
+    select: {
+      title: 'title',
+      region: 'region.title',
+      status: 'contentStatus',
+      rating: 'rating',
+      candidateName: 'candidateName',
+    },
+    prepare({title, region, status, rating, candidateName}) {
+      return {
+        title,
+        subtitle: [status, candidateName, ratingTitle(rating), region].filter(Boolean).join(' — '),
+      }
     },
   },
 })

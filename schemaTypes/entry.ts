@@ -1,6 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
 import {contentStatusField} from './contentStatus'
+import {ratingTitle, RATING_OPTIONS} from './ratingOptions'
 import {richTextBlock} from './richTextBlock'
 
 /**
@@ -66,12 +67,8 @@ export const entry = defineType({
       title: 'Rating',
       type: 'string',
       options: {
-        list: [
-          {title: 'No Recommendation', value: 'no_recommendation'},
-          {title: 'Recommended', value: 'recommended'},
-          {title: 'Endorsed', value: 'endorsed'},
-        ],
-        layout: 'dropdown',
+        list: [...RATING_OPTIONS],
+        layout: 'radio',
       },
       description:
         'Required to mark this entry Published. May be empty while Draft or Pending. Three values only — no fourth tier.',
@@ -111,7 +108,7 @@ export const entry = defineType({
   preview: {
     select: {title: 'name', race: 'race.title', rating: 'rating', status: 'contentStatus', media: 'photo'},
     prepare({title, race, rating, status, media}) {
-      return {title, subtitle: [status, race, rating].filter(Boolean).join(' — '), media}
+      return {title, subtitle: [status, race, ratingTitle(rating)].filter(Boolean).join(' — '), media}
     },
   },
 })

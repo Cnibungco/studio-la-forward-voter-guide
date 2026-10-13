@@ -7,9 +7,11 @@ import {ballotRace} from './ballotRace'
 import {measureGroup} from './measureGroup'
 import {ballotMeasure} from './ballotMeasure'
 import {specialDistrict} from './specialDistrict'
+import {keyDate} from './keyDate'
 import {siteSettings} from './siteSettings'
 
 export const schemaTypes = [
+  keyDate,
   siteSettings,
   region,
   race,

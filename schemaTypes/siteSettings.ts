@@ -25,6 +25,13 @@ export const siteSettings = defineType({
   liveEdit: true,
   fieldsets: [
     {
+      name: 'search',
+      title: 'Search results',
+      description:
+        'The homepage title and description Google shows. Leave either one blank to keep the built-in wording. City and district pages build their own titles from the place name and the election name.',
+      options: {collapsible: true, collapsed: false},
+    },
+    {
       name: 'announcement',
       title: 'Announcement',
       description: 'A short note on the home page. Leave the text blank to hide it.',
@@ -60,6 +67,25 @@ export const siteSettings = defineType({
     },
   ],
   fields: [
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO title',
+      type: 'string',
+      fieldset: 'search',
+      description:
+        'Homepage browser tab and Google title. Leave blank to build it from the election name. Google usually shows about 60 characters and may cut the rest.',
+      validation: (Rule) => Rule.max(160),
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO description',
+      type: 'text',
+      rows: 5,
+      fieldset: 'search',
+      description:
+        'The text under the homepage title in Google. Leave blank to use the built-in description. Google usually shows about 160 characters.',
+      validation: (Rule) => Rule.max(500),
+    }),
     defineField({
       name: 'announcement',
       title: 'Announcement',
@@ -171,7 +197,7 @@ export const siteSettings = defineType({
       fieldset: 'guide',
       initialValue: 'November 2026',
       description:
-        'Short label for the browser tab, search snippet, and share card. Example: November 2026. Leave blank to keep "November 2026".',
+        'Short label for page titles, the header, and the share card. Example: November 2026. Leave blank to keep "November 2026". The homepage SEO title overrides this when that field is filled in.',
       validation: (Rule) => Rule.max(30),
     }),
     defineField({
